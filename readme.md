@@ -34,7 +34,6 @@ ArkClient arkClient = httpArkClientFactory.create(arkNetwork);
 // Look up a transaction by transaction ID
 String arkTransactionId = "83d3fa00ff3ac45ec859403ecedda48b870d73d9eeaddc34a6a8b79556141f43";
 Transaction transaction = arkClient.getTransaction(arkTransactionId);
-System.out.println("Transaction Amount: " + transaction.getAmount());
 
 // Create a transaction
 String address = "AewU1vEmPrtQNjdVo33cX84bfovY3jNAkV";
