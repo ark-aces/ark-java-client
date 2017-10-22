@@ -40,8 +40,8 @@ System.out.println("Transaction Amount: " + transaction.getAmount());
 String address = "AewU1vEmPrtQNjdVo33cX84bfovY3jNAkV";
 Long satoshiAmount = 10000L;
 String vendorField = "test message";
-String passphrase = "liar secret already much glow student crystal paddle refuse add peace onion refuse";
-arkClient.createTransaction(address, satoshiAmount, vendorField, passphrase);
-
+String passphrase = "liar secret already much glow student crystal paddle ...";
+String transactionId = arkClient
+    .createTransaction(address, satoshiAmount, vendorField, passphrase);
 ```
 
