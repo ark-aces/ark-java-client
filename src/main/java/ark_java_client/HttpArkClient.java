@@ -1,9 +1,9 @@
 package ark_java_client;
 
+import ark_java_client.lib.NiceObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.BaseEncoding;
 import io.ark.core.Crypto;
-import ark_java_client.lib.NiceObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.math.RandomUtils;
@@ -88,6 +88,20 @@ public class HttpArkClient implements ArkClient {
     }
 
     @Override
+    public List<Transaction> getTransactionByRecipientAddress(String recipientAddress) {
+        return restTemplate
+            .exchange(
+                getRandomHostBaseUrl() + "/api/transactions?orderBy=timestamp:asc&limit=50&recipientId={recipientId}",
+                HttpMethod.GET,
+                null,
+                TransactionsResponse.class,
+                recipientAddress
+            )
+            .getBody()
+            .getTransactions();
+    }
+
+    @Override
     public Transaction getTransaction(String id) {
         return restTemplate
             .exchange(
@@ -155,6 +169,19 @@ public class HttpArkClient implements ArkClient {
             .getBody()
             .getTransactionIds()
             .get(0);
+    }
+
+    @Override
+    public AccountBalance getBalance(String address) {
+        return restTemplate
+            .exchange(
+                getRandomHostBaseUrl() + "/api/accounts/getBalance?address={id}",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<AccountBalance>() {},
+                address
+            )
+            .getBody();
     }
 
     private byte[] getBytes(CreateArkTransactionRequest createArkTransactionRequest, String senderPublicKey) {
