@@ -10,9 +10,9 @@ import java.util.List;
 public class ArkNetwork {
 
     private final String httpScheme;
-    private final List<ArkNetworkPeer> hosts;
+    private final List<ArkNetworkPeerSettings> peerSettings;
+    private final List<ArkNetworkPeerSettings> trustedPeerSettings;
     private final String netHash;
-    private final String port;
     private final String version;
 
 }

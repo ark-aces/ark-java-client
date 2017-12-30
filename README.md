@@ -18,7 +18,7 @@ section:
 <dependency>
     <groupId>ark-java-client</groupId>
     <artifactId>ark-java-client</artifactId>
-    <version>0.1.0</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
@@ -41,6 +41,6 @@ Long satoshiAmount = 10000L;
 String vendorField = "test message";
 String passphrase = "liar secret already much glow student crystal paddle ...";
 String transactionId = arkClient
-    .createTransaction(address, satoshiAmount, vendorField, passphrase);
+    .broadcastTransaction(address, satoshiAmount, vendorField, passphrase);
 ```
 
