@@ -178,16 +178,21 @@ public class HttpArkClient implements ArkClient {
 
         // Broadcast transactions across all known peers in parallel
         peers.parallelStream().forEach(peer -> {
-            HttpHeaders headers = getHttpHeaders(peer);
-            HttpEntity<CreateArkTransactionsRequest> requestEntity = new HttpEntity<>(createArkTransactionsRequest, headers);
+            try {
+                HttpHeaders headers = getHttpHeaders(peer);
+                HttpEntity<CreateArkTransactionsRequest> requestEntity = new HttpEntity<>(createArkTransactionsRequest, headers);
 
-            restTemplate
-                .exchange(
-                    getPeerUrl(peer) + "/peer/transactions",
-                    HttpMethod.POST,
-                    requestEntity,
-                    new ParameterizedTypeReference<TransactionIdsWrapper>() {}
-                );
+                restTemplate
+                    .exchange(
+                        getPeerUrl(peer) + "/peer/transactions",
+                        HttpMethod.POST,
+                        requestEntity,
+                        new ParameterizedTypeReference<TransactionIdsWrapper>() {}
+                    );
+            } catch (Exception e) {
+                log.info("Failed to broadcast transaction to node " + peer.getIp() + ":" + peer.getPort() 
+                    + ": " + e.getMessage(), e);
+            }
         });
         
         return id;
