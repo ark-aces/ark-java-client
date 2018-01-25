@@ -11,10 +11,7 @@ import org.bitcoinj.core.Base58;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.ByteBuffer;
@@ -23,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -141,7 +139,7 @@ public class HttpArkClient implements ArkClient {
     // todo: support second passphrase signing
     // todo: support different transaction types
     @Override
-    public String broadcastTransaction(String recipientId, Long satoshiAmount, String vendorField, String passphrase) {
+    public String broadcastTransaction(String recipientId, Long satoshiAmount, String vendorField, String passphrase, Integer nodes) {
         Date beginEpoch;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -177,25 +175,36 @@ public class HttpArkClient implements ArkClient {
         createArkTransactionsRequest.setTransactions(Arrays.asList(createArkTransactionRequest));
 
         // Broadcast transactions across all known peers in parallel
-        peers.parallelStream().forEach(peer -> {
-            try {
-                HttpHeaders headers = getHttpHeaders(peer);
-                HttpEntity<CreateArkTransactionsRequest> requestEntity = new HttpEntity<>(createArkTransactionsRequest, headers);
+        List<Peer> targetPeers = new ArrayList<>();
+        for (int i = 0; i < nodes; i++) {
+            targetPeers.add(getRandomPeer());
+        }
+        List<String> transactionIds = new ArrayList<>();
+        targetPeers.parallelStream()
+            .forEach(peer -> {
+                try {
+                    HttpHeaders headers = getHttpHeaders(peer);
+                    HttpEntity<CreateArkTransactionsRequest> requestEntity = new HttpEntity<>(createArkTransactionsRequest, headers);
 
-                restTemplate
-                    .exchange(
-                        getPeerUrl(peer) + "/peer/transactions",
-                        HttpMethod.POST,
-                        requestEntity,
-                        new ParameterizedTypeReference<TransactionIdsWrapper>() {}
-                    );
-            } catch (Exception e) {
-                log.info("Failed to broadcast transaction to node " + peer.getIp() + ":" + peer.getPort() 
-                    + ": " + e.getMessage(), e);
-            }
+                    ResponseEntity<TransactionIdsWrapper> result = restTemplate
+                        .exchange(
+                            getPeerUrl(peer) + "/peer/transactions",
+                            HttpMethod.POST,
+                            requestEntity,
+                            new ParameterizedTypeReference<TransactionIdsWrapper>() {}
+                        );
+
+                    transactionIds.addAll(result.getBody().getTransactionIds());
+
+                } catch (Exception e) {
+                    log.info("Failed to broadcast transaction to node " + peer.getIp() + ":" + peer.getPort()
+                        + ": " + e.getMessage(), e);
+                }
         });
-        
-        return id;
+
+        // todo: return most common transaction id returned from nodes
+        String bestTransactionId = transactionIds.get(0);
+        return bestTransactionId;
     }
 
     @Override
@@ -253,7 +262,11 @@ public class HttpArkClient implements ArkClient {
         headers.set("port", peer.getPort().toString());
         return headers;
     }
-    
+
+    private Peer getRandomPeer() {
+        return peers.get(RandomUtils.nextInt(peers.size()));
+    }
+
     private Peer getRandomTrustedPeer() {
         return trustedPeers.get(RandomUtils.nextInt(trustedPeers.size()));
     }
