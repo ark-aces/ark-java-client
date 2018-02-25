@@ -7,18 +7,28 @@ A simple Java client for the Ark network.
 Clone this repo locally and run maven install command to install locally:
 
 ```
-git clone https://github.com/bradyo/ark-java-client
+git clone https://github.com/ark-aces/ark-java-client
 mvn install
 ```
 
-Import the client into your project's `pom.xml` configuration `dependencies` 
+Add the following repository to your `pom.xml`:
+
+```
+<repository>
+    <id>bintray-ark-aces-ark-java-client</id>
+    <url>https://dl.bintray.com/ark-aces/ark-java-client</url>
+</repository>
+```
+
+Import the client library into your project's `pom.xml` configuration `dependencies` 
 section:
+
 
 ```
 <dependency>
-    <groupId>ark-java-client</groupId>
+    <groupId>com.arkaces</groupId>
     <artifactId>ark-java-client</artifactId>
-    <version>0.3.0</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 

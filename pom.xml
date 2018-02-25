@@ -4,10 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ark-java-client</groupId>
+    <groupId>com.arkaces</groupId>
     <artifactId>ark-java-client</artifactId>
     <version>0.6.0</version>
 
+    <distributionManagement>
+        <repository>
+            <id>bintray-ark-aces-aces-maven</id>
+            <name>ark-aces-aces-maven</name>
+            <url>https://api.bintray.com/maven/ark-aces/aces-maven/ark-java-client/;publish=1</url>
+        </repository>
+    </distributionManagement>
+    
     <repositories>
         <repository>
             <id>ark-java</id>
