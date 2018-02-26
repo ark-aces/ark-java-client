@@ -20,7 +20,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -218,6 +217,12 @@ public class HttpArkClient implements ArkClient {
                 address
             )
             .getBody();
+    }
+
+    @Override
+    public String getAddress(String passphrase) {
+        Crypto.setNetworkVersion(arkNetwork.getPubKeyHash());
+        return Crypto.getAddress(Crypto.getKeys(passphrase));
     }
 
     private byte[] getBytes(CreateArkTransactionRequest createArkTransactionRequest, String senderPublicKey) {

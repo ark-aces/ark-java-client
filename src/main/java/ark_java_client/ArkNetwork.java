@@ -13,6 +13,7 @@ public class ArkNetwork {
     private final List<ArkNetworkPeerSettings> peerSettings;
     private final List<ArkNetworkPeerSettings> trustedPeerSettings;
     private final String netHash;
+    private final Integer pubKeyHash;
     private final String version;
 
 }

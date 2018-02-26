@@ -4,13 +4,6 @@ A simple Java client for the Ark network.
 
 ## Installation
 
-Clone this repo locally and run maven install command to install locally:
-
-```
-git clone https://github.com/ark-aces/ark-java-client
-mvn install
-```
-
 Add the following repository to your `pom.xml`:
 
 ```
@@ -20,15 +13,11 @@ Add the following repository to your `pom.xml`:
 </repository>
 ```
 
-Import the client library into your project's `pom.xml` configuration `dependencies` 
-section:
-
-
 ```
 <dependency>
     <groupId>com.arkaces</groupId>
     <artifactId>ark-java-client</artifactId>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
 </dependency>
 ```
 

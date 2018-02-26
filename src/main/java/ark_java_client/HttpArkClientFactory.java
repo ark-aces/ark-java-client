@@ -8,8 +8,8 @@ public class HttpArkClientFactory {
     public HttpArkClient create(ArkNetwork arkNetwork) {
         // Set up http client with sensible timeout values
         RestTemplate restTemplate = new RestTemplateBuilder()
-                .setConnectTimeout(15000)
-                .setReadTimeout(15000)
+                .setConnectTimeout(5000)
+                .setReadTimeout(5000)
                 .build();
 
         HttpArkClient httpArkClient = new HttpArkClient(arkNetwork, restTemplate);

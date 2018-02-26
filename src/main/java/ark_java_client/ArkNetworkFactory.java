@@ -17,6 +17,7 @@ public class ArkNetworkFactory {
             arkNetworkSettings.getSeedPeers(),
             arkNetworkSettings.getTrustedPeers(),
             arkNetworkSettings.getNetHash(),
+            arkNetworkSettings.getPubKeyHash(),
             arkNetworkSettings.getVersion()
         );
     }

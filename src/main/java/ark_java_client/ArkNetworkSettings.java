@@ -10,5 +10,6 @@ public class ArkNetworkSettings {
     private List<ArkNetworkPeerSettings> seedPeers;
     private List<ArkNetworkPeerSettings> trustedPeers;
     private String netHash;
+    private Integer pubKeyHash;
     private String version;
 }
