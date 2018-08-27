@@ -14,7 +14,7 @@ public class GetAddressTransactionsExample {
 
     public static void main(String[] args) {
         ArkNetworkFactory arkNetworkFactory = new ArkNetworkFactory();
-        ArkNetwork arkNetwork = arkNetworkFactory.createFromYml("testnet.yml");
+        ArkNetwork arkNetwork = arkNetworkFactory.createFromYml("mainnet.yml");
 
         HttpArkClientFactory httpArkClientFactory = new HttpArkClientFactory();
         ArkClient arkClient = httpArkClientFactory.create(arkNetwork);

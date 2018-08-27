@@ -10,6 +10,7 @@ public class ArkNetworkSettings {
     private List<ArkNetworkPeerSettings> seedPeers;
     private List<ArkNetworkPeerSettings> trustedPeers;
     private String netHash;
-    private Integer pubKeyHash;
+    private Integer pubKeyHash = 23;
+    private String epoch = "2017-03-21 13:00:00";
     private String version;
 }

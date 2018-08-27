@@ -143,7 +143,7 @@ public class HttpArkClient implements ArkClient {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         try {
-            beginEpoch = dateFormat.parse("2017-03-21 13:00:00");
+            beginEpoch = dateFormat.parse(arkNetwork.getEpoch());
         } catch (ParseException e) {
             throw new RuntimeException("Failed to parse epoch start date");
         }

@@ -14,6 +14,7 @@ public class ArkNetwork {
     private final List<ArkNetworkPeerSettings> trustedPeerSettings;
     private final String netHash;
     private final Integer pubKeyHash;
+    private final String epoch;
     private final String version;
 
 }

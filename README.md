@@ -17,7 +17,7 @@ Add the following repository to your `pom.xml`:
 <dependency>
     <groupId>com.arkaces</groupId>
     <artifactId>ark-java-client</artifactId>
-    <version>0.7.0</version>
+    <version>0.8.0</version>
 </dependency>
 ```
 
