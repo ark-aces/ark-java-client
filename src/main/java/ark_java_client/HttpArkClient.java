@@ -16,6 +16,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -60,7 +61,8 @@ public class HttpArkClient implements ArkClient {
                     // filter out private ip ranges that might show up in peer list
                     .filter(peer -> {
                         try {
-                            return ! Inet4Address.getByName(peer.getIp()).isSiteLocalAddress();
+                            InetAddress inetAddress = Inet4Address.getByName(peer.getIp());
+                            return ! inetAddress.isSiteLocalAddress() && ! inetAddress.isLoopbackAddress();
                         } catch (UnknownHostException e) {
                             return false;
                         }
