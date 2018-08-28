@@ -10,10 +10,13 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.bitcoinj.core.Base58;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
+import org.spongycastle.util.IPAddress;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.ParseException;
@@ -54,7 +57,16 @@ public class HttpArkClient implements ArkClient {
                     .getBody();
                 Set<Peer> peers = peerList.getPeers().stream()
                     .filter(peer -> Objects.equals(peer.getStatus(), "OK"))
+                    // filter out private ip ranges that might show up in peer list
+                    .filter(peer -> {
+                        try {
+                            return ! Inet4Address.getByName(peer.getIp()).isSiteLocalAddress();
+                        } catch (UnknownHostException e) {
+                            return false;
+                        }
+                    })
                     .collect(Collectors.toSet());
+
                 allPeers.addAll(peers);
             } catch (Exception e) {
                 // ignore failed hosts
