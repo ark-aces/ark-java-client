@@ -10,9 +10,9 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.bitcoinj.core.Base58;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
-import org.spongycastle.util.IPAddress;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.Inet4Address;
@@ -192,32 +192,47 @@ public class HttpArkClient implements ArkClient {
         for (int i = 0; i < nodes; i++) {
             targetPeers.add(getRandomPeer());
         }
-        List<String> transactionIds = new ArrayList<>();
-        targetPeers.parallelStream()
+        List<String> transactionIds = Collections.synchronizedList(new ArrayList<String>());
+        targetPeers
+            .parallelStream()
             .forEach(peer -> {
                 try {
                     HttpHeaders headers = getHttpHeaders(peer);
                     HttpEntity<CreateArkTransactionsRequest> requestEntity = new HttpEntity<>(createArkTransactionsRequest, headers);
 
                     ResponseEntity<TransactionIdsWrapper> result = restTemplate
-                        .exchange(
-                            getPeerUrl(peer) + "/peer/transactions",
-                            HttpMethod.POST,
-                            requestEntity,
-                            new ParameterizedTypeReference<TransactionIdsWrapper>() {}
-                        );
+                            .exchange(
+                                    getPeerUrl(peer) + "/peer/transactions",
+                                    HttpMethod.POST,
+                                    requestEntity,
+                                    new ParameterizedTypeReference<TransactionIdsWrapper>() {
+                                    }
+                            );
 
-                    transactionIds.addAll(result.getBody().getTransactionIds());
+                    if (result.getBody().getTransactionIds() != null && result.getBody().getTransactionIds().size() > 0) {
+                        transactionIds.addAll(result.getBody().getTransactionIds());
+                    } else {
+                        log.info("Failed to broadcast transaction to node " + peer.getIp() + ":" + peer.getPort()
+                                + ": rejected transaction");
+                    }
 
+                } catch (RestClientResponseException re) {
+                    log.info("Failed to broadcast transaction to node " + peer.getIp() + ":" + peer.getPort()
+                            + ": " + re.getMessage(), re);
+                    log.info("Response: " + re.getMessage());
                 } catch (Exception e) {
                     log.info("Failed to broadcast transaction to node " + peer.getIp() + ":" + peer.getPort()
                         + ": " + e.getMessage(), e);
                 }
-        });
+            });
 
-        // todo: return most common transaction id returned from nodes
-        String bestTransactionId = transactionIds.get(0);
-        return bestTransactionId;
+        if (transactionIds.size() > 0) {
+            // todo: return most common transaction id returned from nodes
+            String bestTransactionId = transactionIds.get(0);
+            return bestTransactionId;
+        } else {
+            throw new RuntimeException("Broadcast failed because no nodes accepted transaction");
+        }
     }
 
     @Override
