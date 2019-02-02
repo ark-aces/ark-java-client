@@ -1,6 +1,7 @@
 package ark_java_client;
 
 import ark_java_client.lib.NiceObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.BaseEncoding;
 import io.ark.core.Crypto;
@@ -43,14 +44,12 @@ public class HttpArkClient implements ArkClient {
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("nethash", arkNetwork.getNetHash());
-                headers.set("version", arkNetwork.getVersion());
-                headers.set("port", host.getPort().toString());
+                headers.set("API-Version", arkNetwork.getVersion());
                 HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
 
                 PeerList peerList = restTemplate
                     .exchange(
-                        baseUrl + "/peer/list",
+                        baseUrl + "/api/peers",
                         HttpMethod.GET,
                         requestEntity,
                         PeerList.class
@@ -69,11 +68,43 @@ public class HttpArkClient implements ArkClient {
                     })
                     .collect(Collectors.toSet());
 
-                allPeers.addAll(peers);
+                // Get peer api port from config
+                List<Peer> configuredPeers = new ArrayList<>();
+                for (Peer peer : peers) {
+                    try {
+                        String configUrl = arkNetwork.getHttpScheme() + "://" + peer.getIp() + ":" + peer.getPort() + "/config";
+                        JsonNode responseBody = restTemplate.exchange(configUrl, HttpMethod.GET, null, JsonNode.class)
+                                .getBody();
+                        Integer configuredPort = responseBody.get("data")
+                                .get("plugins")
+                                .get("@arkecosystem/core-api")
+                                .get("port")
+                                .asInt();
+
+                        Peer configuredPeer = new Peer();
+                        configuredPeer.setDelay(peer.getDelay());
+                        configuredPeer.setHeight(peer.getHeight());
+                        configuredPeer.setIp(peer.getIp());
+                        configuredPeer.setVersion(peer.getVersion());
+                        configuredPeer.setPort(configuredPort);
+                        configuredPeers.add(configuredPeer);
+                    }
+                    catch (Exception e) {
+                        // Skip failed peers
+                        log.warn("Discarding peer " + peer.getIp() + " due to request failure: " + e.getMessage());
+                    }
+                }
+
+                allPeers.addAll(configuredPeers);
             } catch (Exception e) {
                 // ignore failed hosts
             }
         });
+
+        if (allPeers.size() < 1) {
+            log.error("No peers available to connect to ark network");
+            throw new RuntimeException("No Peers");
+        }
 
         Set<Peer> newPeers = new HashSet<>(peers);
         newPeers.retainAll(allPeers);
@@ -96,20 +127,26 @@ public class HttpArkClient implements ArkClient {
             });
         trustedPeers.addAll(newTrustedPeers);
         trustedPeers.retainAll(newTrustedPeers);
-        
+
+        if (trustedPeers.size() < 1) {
+            log.error("No trusted peers available to connect to ark network");
+            throw new RuntimeException("No trusted peers");
+        }
+
         log.info("Updated trusted peers: ");
         log.info(new NiceObjectMapper(new ObjectMapper()).writeValueAsString(trustedPeers));
     }
 
     @Override
     public List<Transaction> getTransactions(Integer limit, Integer offset) {
+        Peer peer = getRandomTrustedPeer();
         return restTemplate
             .exchange(
-                getRandomTrustedPeerUrl() + "/api/transactions?orderBy=timestamp:desc" +
+                getPeerUrl(peer) + "/api/transactions?orderBy=timestamp:desc" +
                     "&limit={limit}" +
                     "&offset={offset}",
                 HttpMethod.GET,
-                null,
+                new HttpEntity<>(getHttpHeaders(peer)),
                 TransactionsResponse.class,
                 limit,
                 offset
@@ -120,14 +157,15 @@ public class HttpArkClient implements ArkClient {
 
     @Override
     public List<Transaction> getTransactionByRecipientAddress(String recipientAddress, Integer limit, Integer offset) {
+        Peer peer = getRandomTrustedPeer();
         return restTemplate
             .exchange(
-                getRandomTrustedPeerUrl() + "/api/transactions?orderBy=timestamp:desc" +
+                getPeerUrl(peer) + "/api/transactions?orderBy=timestamp:desc" +
                     "&limit={limit}" +
                     "&offset={offset}" +
                     "&recipientId={recipientId}",
                 HttpMethod.GET,
-                null,
+                new HttpEntity<>(getHttpHeaders(peer)),
                 TransactionsResponse.class,
                 limit,
                 offset,
@@ -139,11 +177,12 @@ public class HttpArkClient implements ArkClient {
 
     @Override
     public Transaction getTransaction(String id) {
+        Peer peer = getRandomTrustedPeer();
         return restTemplate
             .exchange(
                 getRandomTrustedPeerUrl() + "/api/transactions/get?id={id}",
                 HttpMethod.GET,
-                null,
+                new HttpEntity<>(getHttpHeaders(peer)),
                 new ParameterizedTypeReference<TransactionWrapper>() {},
                 id
             ).getBody().getTransaction();
@@ -192,7 +231,7 @@ public class HttpArkClient implements ArkClient {
         for (int i = 0; i < nodes; i++) {
             targetPeers.add(getRandomPeer());
         }
-        List<String> transactionIds = Collections.synchronizedList(new ArrayList<String>());
+        List<String> transactionIds = Collections.synchronizedList(new ArrayList<>());
         targetPeers
             .parallelStream()
             .forEach(peer -> {
@@ -237,11 +276,12 @@ public class HttpArkClient implements ArkClient {
 
     @Override
     public AccountBalance getBalance(String address) {
+        Peer peer = getRandomTrustedPeer();
         return restTemplate
             .exchange(
-                getRandomTrustedPeerUrl() + "/api/accounts/getBalance?address={id}",
+                getPeerUrl(peer) + "/api/accounts/getBalance?address={id}",
                 HttpMethod.GET,
-                null,
+                new HttpEntity<>(getHttpHeaders(peer)),
                 new ParameterizedTypeReference<AccountBalance>() {},
                 address
             )
@@ -290,10 +330,7 @@ public class HttpArkClient implements ArkClient {
 
     private HttpHeaders getHttpHeaders(Peer peer) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("nethash", arkNetwork.getNetHash());
-        headers.set("version", arkNetwork.getVersion());
-        headers.set("port", peer.getPort().toString());
+        headers.set("API-Version", "1");
         return headers;
     }
 
@@ -311,11 +348,6 @@ public class HttpArkClient implements ArkClient {
 
     private String getPeerUrl(Peer peer) {
         return arkNetwork.getHttpScheme() + "://" + peer.getIp() + ":" + peer.getPort();
-    }
-    
-    private String getRandomHostBaseUrl() {
-        Peer peer = peers.get(RandomUtils.nextInt(peers.size()));
-        return getPeerUrl(peer);
     }
 
 }
