@@ -10,7 +10,6 @@ import java.util.List;
 public class ArkNetwork {
 
     private final String httpScheme;
-    private final List<ArkNetworkPeerSettings> peerSettings;
     private final List<ArkNetworkPeerSettings> trustedPeerSettings;
     private final String netHash;
     private final Integer pubKeyHash;

@@ -14,7 +14,6 @@ public class ArkNetworkFactory {
         
         return new ArkNetwork(
             arkNetworkSettings.getScheme(),
-            arkNetworkSettings.getSeedPeers(),
             arkNetworkSettings.getTrustedPeers(),
             arkNetworkSettings.getNetHash(),
             arkNetworkSettings.getPubKeyHash(),

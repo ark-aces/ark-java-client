@@ -5,9 +5,6 @@ import lombok.Data;
 @Data
 public class Peer {
     private String ip;
-    private Integer port;
-    private String version;
-    private Integer height;
-    private String status;
-    private Integer delay;
+    private Integer apiPort;
+    private Integer p2pPort;
 }

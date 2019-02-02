@@ -6,4 +6,5 @@ import lombok.Data;
 public class ArkNetworkPeerSettings {
     private String hostname;
     private Integer port;
+    private Integer p2pPort;
 }
