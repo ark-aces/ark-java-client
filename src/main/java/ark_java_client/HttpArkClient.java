@@ -78,7 +78,9 @@ public class HttpArkClient implements ArkClient {
     // todo: support different transaction types
     @Override
     public String broadcastTransaction(String recipientId, Long satoshiAmount, String vendorField, String passphrase, Integer nodes) {
-        org.arkecosystem.crypto.transactions.Transaction transaction = new Transfer()
+        Transfer transferBuilder = new Transfer();
+        transferBuilder.transaction.network = arkNetwork.getPubKeyHash();
+        org.arkecosystem.crypto.transactions.Transaction transaction = transferBuilder
                 .recipient(recipientId)
                 .amount(satoshiAmount)
                 .vendorField(vendorField)

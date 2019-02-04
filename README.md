@@ -17,7 +17,7 @@ Add the following repository to your `pom.xml`:
 <dependency>
     <groupId>com.arkaces</groupId>
     <artifactId>ark-java-client</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -39,7 +39,8 @@ String address = "AewU1vEmPrtQNjdVo33cX84bfovY3jNAkV";
 Long satoshiAmount = 10000L;
 String vendorField = "test message";
 String passphrase = "liar secret already much glow student crystal paddle ...";
+Integer nodeCount = 5;
 String transactionId = arkClient
-    .broadcastTransaction(address, satoshiAmount, vendorField, passphrase);
+    .broadcastTransaction(address, satoshiAmount, vendorField, passphrase, nodeCount);
 ```
 
