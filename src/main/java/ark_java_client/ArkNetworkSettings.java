@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class ArkNetworkSettings {
+    private String networkVersion = "1";
     private String scheme;
     private List<ArkNetworkPeerSettings> trustedPeers;
     private String netHash;

@@ -13,6 +13,7 @@ public class ArkNetworkFactory {
         ArkNetworkSettings arkNetworkSettings = yaml.loadAs(fileInputStream, ArkNetworkSettings.class);
         
         return new ArkNetwork(
+            arkNetworkSettings.getNetworkVersion(),
             arkNetworkSettings.getScheme(),
             arkNetworkSettings.getTrustedPeers(),
             arkNetworkSettings.getNetHash(),

@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 public class ArkNetwork {
 
+    private final String networkVersion;
     private final String httpScheme;
     private final List<ArkNetworkPeerSettings> trustedPeerSettings;
     private final String netHash;

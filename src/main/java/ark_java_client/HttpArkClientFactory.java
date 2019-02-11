@@ -15,7 +15,7 @@ public class HttpArkClientFactory {
     private static final Integer DEFAULT_P2P_PORT = 4001;
     private static final Integer DEFAULT_API_PORT = 4003;
 
-    public HttpArkClient create(ArkNetwork arkNetwork) {
+    public ArkClient create(ArkNetwork arkNetwork) {
         // Set up http client with sensible timeout values
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .setConnectTimeout(3000)
@@ -38,7 +38,13 @@ public class HttpArkClientFactory {
 
         log.info("Using Ark network trusted peers: " + new NiceObjectMapper(new ObjectMapper()).writeValueAsString(trustedPeers));
 
-        return new HttpArkClient(arkNetwork, restTemplate, trustedPeers);
+        if (arkNetwork.getNetworkVersion() == null || arkNetwork.getNetworkVersion().equals("1")) {
+            return new HttpArkV1Client(arkNetwork, restTemplate, trustedPeers);
+        } else if (arkNetwork.getNetworkVersion().equals("2")) {
+            return new HttpArkClient(arkNetwork, restTemplate, trustedPeers);
+        } else {
+            throw new IllegalArgumentException("Invalid value for Ark networkVersion, value values are: \"1\", \"2\"");
+        }
     }
 
 }

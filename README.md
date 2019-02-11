@@ -17,9 +17,18 @@ Add the following repository to your `pom.xml`:
 <dependency>
     <groupId>com.arkaces</groupId>
     <artifactId>ark-java-client</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
 </dependency>
 ```
+
+
+## Configuration
+
+This client was made to work with Ark V2 nodes and Ark clones still running on the legacy V1 code. 
+
+In configuration file, set `newtowrkVersion: 1` for legacy Ark V1 networks or `networkVersion: 2`
+for Ark V2 networks.
+
 
 ## Usage
 
